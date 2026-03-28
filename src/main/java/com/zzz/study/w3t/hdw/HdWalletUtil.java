@@ -32,54 +32,42 @@ public class HdWalletUtil {
     /**
      * 2. 从助记词推导根密钥
      */
-    public static DeterministicKey getMasterKey(String mnemonic) {
-        /*try {
-            List<String> words = Arrays.asList(mnemonic.split(" "));
-            // 创建种子，password 为空字符串，creationTimeSeconds 为 0
-            DeterministicSeed seed = DeterministicSeed.ofMnemonic(words, "");
 
-            // 构建密钥链
-            DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(seed).build();
-            // 获取主密钥 (m)
-            return chain.getMasterKey();
-        } catch (MnemonicException.MnemonicWordException | MnemonicException.MnemonicChecksumException | MnemonicException.MnemonicLengthException e) {
-            throw new RuntimeException("助记词无效", e);
-        }*/
-        return null;
+    public static DeterministicKey getMasterPrivateKey(String mnemonic) {
+        if (mnemonic == null || mnemonic.isEmpty()) {
+            throw new IllegalArgumentException("助记词不能为空");
+        }
+        List<String> words = Arrays.asList(mnemonic.split(" "));
+        if (words.size() != 12) {
+            throw new IllegalArgumentException("助记词长度不合法");
+        }
+        // 创建种子，password 为空字符串，creationTimeSeconds 为 0
+        DeterministicSeed seed = DeterministicSeed.ofMnemonic(words, "");
+        /*DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(seed).build();
+        System.out.println(chain.getAccountPath());*/
+        if (seed.getSeedBytes() == null) {
+            return null;
+        }
+        return HDKeyDerivation.createMasterPrivateKey(seed.getSeedBytes());
     }
 
     /**
      * 3. 推导特定路径地址
      */
     public static String deriveAddress(String mnemonic, int coinType, int accountIndex, int addressIndex) {
-        /*DeterministicKey masterKey = getMasterKey(mnemonic);
+        DeterministicKey deterministicKey = deterministicKey(mnemonic, coinType, accountIndex, addressIndex);
+        if (deterministicKey == null) {
+            return null;
+        }
+        return getAddressFromKey(deterministicKey, coinType);
+    }
 
-        // 路径: m/44'
-        // 注意：这里必须从 masterKey 的私钥字节开始构建父密钥
-        DeterministicKey purposeKey = HDKeyDerivation.createMasterPrivateKey(masterKey.getPrivKeyBytes())
-                .deriveChild(44, true);
-
-        // 路径: m/44'/coin_type'
-        DeterministicKey coinTypeKey = purposeKey.deriveChild(coinType, true);
-
-        // 路径: m/44'/coin_type'/account'
-        DeterministicKey accountKey = coinTypeKey.deriveChild(accountIndex, true);
-
-        // 路径: m/44'/coin_type'/account'/0 (External Chain)
-        DeterministicKey changeKey = accountKey.deriveChild(0, false);
-
-        // 路径: m/44'/coin_type'/account'/0/address_index
-        DeterministicKey addressKey = changeKey.deriveChild(addressIndex, false);
-
-        return getAddressFromKey(addressKey, coinType);*/
-        List<String> words = Arrays.asList(mnemonic.split(" "));
-        // 创建种子，password 为空字符串，creationTimeSeconds 为 0
-        DeterministicSeed seed = DeterministicSeed.ofMnemonic(words, "");
-
-//        DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(seed).build();
-//        System.out.println(chain.getAccountPath());
-
-        DeterministicKey masterPrivateKey = HDKeyDerivation.createMasterPrivateKey(seed.getSeedBytes());
+    public static DeterministicKey deterministicKey(String mnemonic, int coinType, int accountIndex, int addressIndex) {
+        DeterministicKey masterPrivateKey = getMasterPrivateKey(mnemonic);
+        if (masterPrivateKey == null) {
+            return null;
+        }
+        // m代表master
         // m / purpose' / coin_type' / account' / change / address_index
         List<ChildNumber> path = Arrays.asList(
                 new ChildNumber(44, true),
@@ -89,14 +77,9 @@ public class HdWalletUtil {
                 new ChildNumber(addressIndex, false)
         );
         DeterministicHierarchy dh = new DeterministicHierarchy(masterPrivateKey);
-        DeterministicKey deterministicKey = dh.get(path, true, true);
-        System.out.println("Path: " + deterministicKey.getPath().toString());
-        return getAddressFromKey(deterministicKey, coinType);
+        return dh.get(path, true, true);
     }
 
-    /**
-     * 4. 根据币种生成地址
-     */
     /**
      * 4. 根据币种生成地址
      */
@@ -125,6 +108,13 @@ public class HdWalletUtil {
 
     public static void main(String[] args) {
         try {
+            // 助记词: recipe volume blue nasty inquiry sea baby farm business world fitness pool
+            // 以太坊地址 (m/44H/60H/0H/0/0): 0x101fad54ae25076579f2f7ec92b4209b33b5f201 TODO 地址格式和METAMASK一致，为什么将助记词导入之后无法关联到呢？
+            // https://sepolia.etherscan.io/tx/0x8984386c4d8304b229f54d76b529e508aea55c049813970e7005a2eae5ad2c30
+            // 以太坊地址：0x101fad54ae25076579f2f7ec92b4209b33b5f201
+            // 67391719122516144521706562135748408655814537406568014084488913715369885812132
+            // 转0.01个以太测试
+
             // 1. 生成助记词
             String mnemonic = generateMnemonic();
             System.out.println("助记词: " + mnemonic);
@@ -137,12 +127,16 @@ public class HdWalletUtil {
             System.out.println("以太坊地址 (m/44'/0'/0'/0/0): " + ethAddress);
 
 
-            int accountIndex2 = 1, addressIndex2 = 1;
+            int accountIndex2 = 1, addressIndex2 = 0;
             String btcAddress2 = deriveAddress(mnemonic, CoinType.BITCOIN.getCoinType(), accountIndex2, addressIndex2);
             System.out.println("比特币地址 (m/44'/0'/0'/0/0): " + btcAddress2);
 
             String ethAddress2 = deriveAddress(mnemonic, CoinType.ETHEREUM.getCoinType(), accountIndex2, addressIndex2);
             System.out.println("以太坊地址 (m/44'/0'/0'/0/0): " + ethAddress2);
+
+
+            DeterministicKey deterministicKey = deterministicKey("recipe volume blue nasty inquiry sea baby farm business world fitness pool", CoinType.ETHEREUM.getCoinType(), 0, 0);
+            System.out.println("Path: " + (deterministicKey != null ? deterministicKey.getPath().toString() : " 空"));
 
         } catch (Exception e) {
             e.printStackTrace();
