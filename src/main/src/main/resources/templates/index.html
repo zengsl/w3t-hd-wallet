@@ -1,30 +1,167 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${title}">W3T 钱包系统</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 钱包 - 首页</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
-        .menu { margin: 20px 0; padding: 10px; background: #eee; border-radius: 4px; }
-        .menu a { margin-right: 20px; text-decoration: none; color: #0066cc; font-weight: bold; }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        .hero-section {
+            padding: 80px 0;
+            text-align: center;
+            color: white;
+        }
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            border: none;
+            text-align: center;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        .icon-box {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.8rem;
+        }
+        .icon-transfer { background: #e3f2fd; color: #2196f3; }
+        .icon-history { background: #e8f5e9; color: #4caf50; }
+        .card-title { font-weight: 700; color: #333; margin-bottom: 15px; }
+        .card-text { color: #666; margin-bottom: 25px; }
+        .btn-custom {
+            border-radius: 8px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary-custom { background: #667eea; border: none; color: white; }
+        .btn-primary-custom:hover { background: #5a6fd6; color: white; }
+        .btn-outline-custom { border: 2px solid #667eea; color: #667eea; background: transparent; }
+        .btn-outline-custom:hover { background: #667eea; color: white; }
+
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1 th:text="${title}">欢迎使用 W3T 钱包系统</h1>
 
-    <div class="menu">
-        <h2>功能演示</h2>
-        <a href="/mpc/create">1. 创建 MPC 钱包</a>
-        <a href="/mpc/sign">2. MPC 签名模拟</a>
+<!-- 导航栏 -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fa-solid fa-wallet me-2"></i>My Web3 Wallet
+        </a>
+        <div class="d-flex">
+            <!-- 新增的导入助记词按钮 -->
+            <a href="/import" class="btn btn-outline-light btn-sm rounded-pill px-3 me-2">
+                <i class="fa-solid fa-file-import me-1"></i> 导入助记词
+            </a>
+            <a href="/eth/transfer" class="btn btn-light btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-paper-plane me-1"></i> 立即转账
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- 主体内容 -->
+<div class="container">
+    <!-- 欢迎区域 -->
+    <div class="hero-section">
+        <h1 class="hero-title">安全 · 便捷 · 去中心化</h1>
+        <p class="hero-subtitle">支持本地私钥签名与 MPC 多方计算签名的以太坊钱包</p>
     </div>
 
-    <div class="info">
-        <p>当前环境: Spring Boot 3.5.13 + bitcoinj 0.17</p>
-        <p>说明: 本演示模拟了 MPC 的分布式签名流程，实际私钥分片计算由 Rust 节点完成。</p>
+    <!-- 功能卡片 -->
+    <div class="row g-4 justify-content-center">
+        <!-- 卡片 1: 转账 -->
+        <div class="col-md-5">
+            <div class="feature-card">
+                <div class="icon-box icon-transfer">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                </div>
+                <h3 class="card-title">快速转账</h3>
+                <p class="card-text">
+                    支持两种签名模式：<br>
+                    <small class="text-muted">• <b>本地模式</b>：使用私钥在浏览器端签名</small><br>
+                    <small class="text-muted">• <b>MPC模式</b>：由后端节点协助签名</small>
+                </p>
+                <a href="/eth/transfer" class="btn btn-primary-custom btn-custom w-100">
+                    去转账 <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- 卡片 2: 记录 -->
+        <div class="col-md-5">
+            <div class="feature-card">
+                <div class="icon-box icon-history">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <h3 class="card-title">交易记录</h3>
+                <p class="card-text">
+                    查看您的本地交易历史。<br>
+                    所有记录仅存储在您的浏览器本地缓存中，安全隐私。
+                </p>
+                <a href="/eth/transfer" class="btn btn-outline-custom btn-custom w-100">
+                    查看记录 <i class="fa-solid fa-list ms-2"></i>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- 底部 -->
+<footer>
+    <div class="container">
+        <p>&copy; 2026 My Web3 Wallet. Powered by Spring Boot & Web3j.</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

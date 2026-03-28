@@ -1,8 +1,10 @@
 # HD(Hierarchical Deterministic) Wallet Demo
 
+>该项目为了学习了解web3相关流程
+
 分层确定性钱包
 
-> https://liaoxuefeng.com/books/blockchain/bitcoin/hd-wallet/index.html
+https://liaoxuefeng.com/books/blockchain/bitcoin/hd-wallet/index.html
 
 助记词->种子->根私钥->子私钥->还可以继续派生私钥->公钥->地址
 

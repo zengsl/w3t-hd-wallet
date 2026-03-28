@@ -63,6 +63,34 @@ public class HdWalletUtil {
         return getAddressFromKey(deterministicKey, coinType);
     }
 
+    public static DeterministicKey deterministicKey(DeterministicKey masterKey, int coinType, int accountIndex, int addressIndex) {
+        // m代表master
+        // m / purpose' / coin_type' / account' / change / address_index
+        List<ChildNumber> path = Arrays.asList(
+                new ChildNumber(44, true),
+                new ChildNumber(coinType, true),
+                new ChildNumber(accountIndex, true),
+                ChildNumber.ZERO,
+                new ChildNumber(addressIndex, false)
+        );
+        DeterministicHierarchy dh = new DeterministicHierarchy(masterKey);
+        return dh.get(path, true, true);
+    }
+
+    public static String deriveAddress(DeterministicKey masterKey, int coinType, int accountIndex, int addressIndex) {
+        // m代表master
+        // m / purpose' / coin_type' / account' / change / address_index
+        List<ChildNumber> path = Arrays.asList(
+                new ChildNumber(44, true),
+                new ChildNumber(coinType, true),
+                new ChildNumber(accountIndex, true),
+                ChildNumber.ZERO,
+                new ChildNumber(addressIndex, false)
+        );
+        DeterministicHierarchy dh = new DeterministicHierarchy(masterKey);
+        return getAddressFromKey(dh.get(path, true, true), coinType);
+    }
+
     public static DeterministicKey deterministicKey(String mnemonic, int coinType, int accountIndex, int addressIndex) {
         DeterministicKey masterPrivateKey = getMasterPrivateKey(mnemonic);
         if (masterPrivateKey == null) {
@@ -81,10 +109,12 @@ public class HdWalletUtil {
         return dh.get(path, true, true);
     }
 
+
+
     /**
      * 4. 根据币种生成地址
      */
-    private static String getAddressFromKey(DeterministicKey key, int coinType) {
+    public static String getAddressFromKey(DeterministicKey key, int coinType) {
         // 以太坊
         if (coinType == CoinType.ETHEREUM.getCoinType()) {
             Credentials credentials = Credentials.create(key.getPrivateKeyAsHex());

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 钱包 - 导入助记词</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+        .import-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        /* 账户卡片样式 */
+        .account-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: #fff;
+            transition: transform 0.2s;
+        }
+        .account-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .account-title {
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        .account-title i { margin-right: 10px; color: #764ba2; }
+        .total-balance {
+            color: #198754;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        /* 资产列表样式 */
+        .asset-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .asset-item:last-child { border-bottom: none; }
+        .asset-info { display: flex; align-items: center; }
+        .chain-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+        .asset-details h6 { margin: 0; font-size: 0.95rem; font-weight: 600; }
+        .asset-details small { color: #888; }
+        .asset-value { text-align: right; }
+        .asset-amount { font-weight: bold; color: #333; display: block; }
+        .asset-fiat { font-size: 0.8rem; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="import-container">
+        <h2 class="text-center mb-4 text-primary"><i class="fa-solid fa-key"></i> 导入助记词</h2>
+        <p class="text-muted text-center mb-4">请输入 12 个助记词，系统将自动扫描派生地址的多链资产</p>
+
+        <!-- 输入区域 -->
+        <div class="mb-3">
+            <textarea id="mnemonicInput" class="form-control" rows="3" placeholder="请输入12个助记词，用空格分隔..."></textarea>
+        </div>
+
+        <!-- 按钮区域 -->
+        <div class="d-flex gap-2 mb-4">
+            <button id="btnImport" class="btn btn-success flex-fill">
+                <i class="fa-solid fa-magnifying-glass"></i> 开始扫描
+            </button>
+            <!-- 修改点1：按钮文字改为“清空输入”，功能只清空输入框 -->
+            <button id="btnClear" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-eraser"></i> 清空输入
+            </button>
+        </div>
+
+        <!-- 结果展示区域 -->
+        <div id="resultArea" class="d-none">
+            <h5 class="mb-3"><i class="fa-solid fa-wallet text-success"></i> 扫描结果</h5>
+            <div id="resultsList">
+                <!-- 修改点2：这里将动态生成 账户卡片 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFromStorage();
+
+        document.getElementById('btnImport').addEventListener('click', importWallet);
+        document.getElementById('btnClear').addEventListener('click', clearInputOnly);
+    });
+
+    function importWallet() {
+        var input = document.getElementById('mnemonicInput');
+        var mnemonic = input.value.trim();
+
+        if (!mnemonic) { alert('请先输入助记词！'); return; }
+        if (mnemonic.split(/\s+/).length !== 12) { alert('助记词必须是 12 个单词！'); return; }
+
+        // 禁用按钮防止重复点击
+        var btn = document.getElementById('btnImport');
+        var originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 扫描中...';
+
+        // 调用真实后端接口
+        fetch('/api/scan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ mnemonic: mnemonic })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    saveToStorage(data.data);
+                    renderResults(data.data);
+                    alert('扫描完成！');
+                } else {
+                    alert(data.message || '扫描失败');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('网络错误，请稍后重试');
+            })
+            .finally(() => {
+                // 恢复按钮状态
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+    }
+
+    function clearInputOnly() {
+        document.getElementById('mnemonicInput').value = '';
+    }
+
+    // 渲染逻辑保持不变，因为 Java Model 结构已经和前端对齐了
+    function renderResults(data) {
+        var listEl = document.getElementById('resultsList');
+        var resultArea = document.getElementById('resultArea');
+
+        listEl.innerHTML = '';
+
+        data.forEach(function(account) {
+            var assetsHtml = '';
+            // 增加空判断，防止 assets 为 null 报错
+            if (account.assets) {
+                account.assets.forEach(function(asset) {
+                    assetsHtml += `
+                        <div class="asset-item">
+                            <div class="asset-info">
+                                <div class="chain-icon"><i class="${asset.icon || 'fa-solid fa-coins'}"></i></div>
+                                <div class="asset-details">
+                                    <h6>${asset.symbol}</h6>
+                                    <small>${asset.chain}网络</small>
+                                </div>
+                            </div>
+                            <div class="asset-value">
+                                <span class="asset-amount">${asset.balance}</span>
+                                <span class="asset-fiat">≈ ${asset.usd}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            var accountCard = `
+                <div class="account-card">
+                    <div class="account-header">
+                        <h5 class="account-title">
+                            <i class="fa-regular fa-user"></i> ${account.accountName}
+                        </h5>
+                        <div class="text-end">
+                            <small class="d-block text-muted" style="font-size: 0.75rem;">预估总资产</small>
+                            <span class="total-balance">${account.totalUsd}</span>
+                        </div>
+                    </div>
+                    <div class="account-body">
+                        ${assetsHtml}
+                    </div>
+                </div>
+            `;
+            listEl.innerHTML += accountCard;
+        });
+
+        resultArea.classList.remove('d-none');
+    }
+
+    function saveToStorage(data) {
+        localStorage.setItem('wallet_scan_result', JSON.stringify(data));
+    }
+
+    function loadFromStorage() {
+        var data = localStorage.getItem('wallet_scan_result');
+        if (data) {
+            renderResults(JSON.parse(data));
+        }
+    }
+</script>
+
+</body>
+</html>
