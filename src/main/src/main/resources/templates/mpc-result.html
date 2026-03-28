@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <title>MPC 结果</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .card { border: 1px solid #ddd; padding: 20px; border-radius: 4px; margin-top: 20px; background: #f9f9f9; }
+        .error { color: red; background: #ffeaea; padding: 10px; border-radius: 4px; }
+        pre { background: #eee; padding: 10px; border-radius: 4px; overflow: auto; }
+    </style>
+</html>
+<body>
+<h1>MPC 钱包创建结果</h1>
+
+<div th:if="${success}" class="card">
+    <h2>🎉 创建成功!</h2>
+    <p><strong>Wallet ID:</strong> <span th:text="${wallet['walletId']}"></span></p>
+    <p><strong>地址:</strong> <code th:text="${wallet['address']}"></code></p>
+    <p><strong>参与节点:</strong></p>
+    <pre th:text="${wallet['nodes']}"></pre>
+</div>
+
+<div th:if="${error}" class="error" th:text="${error}">
+</div>
+
+<p><a href="/">返回首页</a></p>
+</body>
+</html>

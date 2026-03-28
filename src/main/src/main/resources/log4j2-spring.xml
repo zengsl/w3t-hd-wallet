@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Property>
+        <Property name="LOG_PATH">logs</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- 控制台输出 (同步，用于查看系统启动和基础信息) -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- 文件输出 (用于归档) -->
+        <RollingFile name="File" fileName="${LOG_PATH}/app.log"
+                     filePattern="${LOG_PATH}/app-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- 核心：异步 Appender (半异步的关键) -->
+        <!-- 使用 AsyncLogger 需要配合这个包装器，或者直接使用 AsyncLogger 标签 -->
+        <!-- 这里我们定义一个标准的 Appender 供 AsyncLogger 使用 -->
+        <RollingFile name="AsyncFile" fileName="${LOG_PATH}/mpc-async.log"
+                     filePattern="${LOG_PATH}/mpc-async-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- 异步日志器：专门处理 MPC 业务包 -->
+        <!-- includeLocation="false" 至关重要：开启异步时，关闭行号获取可提升 10 倍性能 -->
+        <AsyncLogger name="com.zzz.study.w3t" level="info" additivity="false" includeLocation="false">
+            <AppenderRef ref="AsyncFile"/>
+            <AppenderRef ref="Console"/>
+        </AsyncLogger>
+
+        <!-- 根日志器：保持同步，处理 Spring 框架等其他日志 -->
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Root>
+    </Loggers>
+</Configuration>

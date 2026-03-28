@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>转账结果</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; padding: 40px; background: #f4f4f4; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        .status-success { color: #2e7d32; font-weight: bold; font-size: 1.2em; }
+        .status-sim { color: #f57c00; font-weight: bold; }
+        pre { background: #eee; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        a { display: inline-block; margin-top: 20px; color: #0066cc; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>交易处理结果</h2>
+
+    <div th:if="${result['status']} == 'BROADCASTED'">
+        <p class="status-success">✅ 交易已成功广播到测试网!</p>
+        <p><strong>Tx Hash:</strong> <a th:href="'https://sepolia.etherscan.io/tx/' + ${result['txHash']}" target="_blank" th:text="${result['txHash']}"></a></p>
+    </div>
+
+    <div th:if="${result['status']} == 'SIMULATION_MODE'">
+        <p class="status-sim">⚠️ 模拟模式</p>
+        <p th:text="${result['message']}"></p>
+        <p>交易已签名，但未发送（请检查代码中的 Infura URL）。</p>
+    </div>
+
+    <hr>
+    <h3>交易详情:</h3>
+    <p><strong>To:</strong> <span th:text="${result['to']}"></span></p>
+    <p><strong>Amount:</strong> <span th:text="${result['amount']}"></span></p>
+
+    <h3>原始签名数据 (Signed RLP):</h3>
+    <pre th:text="${result['signedData']}"></pre>
+
+    <a href="/eth/transfer">← 返回转账页面</a>
+</div>
+</body>
+</html>

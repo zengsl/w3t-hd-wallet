@@ -1,0 +1,17 @@
+server:
+  port: 8181  # 指定端口，防止被占用
+
+spring:
+  application:
+    name: w3t-hd-wallet-demo
+  # 确保 Thymeleaf 模板引擎开启
+  thymeleaf:
+    cache: false # 开发环境关闭缓存，修改页面后不用重启
+    mode: HTML
+    encoding: UTF-8
+    prefix: classpath:/templates/
+    suffix: .html
+
+# 日志配置 (如果使用 Log4j2)
+logging:
+  config: classpath:log4j2-spring.xml

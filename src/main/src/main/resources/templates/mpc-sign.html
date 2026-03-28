@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>MPC 签名模拟</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background: #0066cc; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0055aa; }
+    </style>
+</head>
+<body>
+<h1 th:text="${pageTitle}">MPC 分布式签名模拟</h1>
+<form action="/mpc/sign" method="post">
+    <div class="form-group">
+        <label for="address">钱包地址:</label>
+        <input type="text" id="address" name="address" value="0xMPC_Simulated_Addr" required>
+    </div>
+
+    <div class="form-group">
+        <label for="message">交易内容 (Message):</label>
+        <input type="text" id="message" name="message" value="Transfer 1 BTC" required>
+    </div>
+
+    <button type="submit">发起 MPC 签名</button>
+</form>
+
+<p><a href="/">返回首页</a></p>
+</body>
+</html>

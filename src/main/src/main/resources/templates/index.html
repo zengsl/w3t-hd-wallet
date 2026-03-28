@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">W3T 钱包系统</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .menu { margin: 20px 0; padding: 10px; background: #eee; border-radius: 4px; }
+        .menu a { margin-right: 20px; text-decoration: none; color: #0066cc; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 th:text="${title}">欢迎使用 W3T 钱包系统</h1>
+
+    <div class="menu">
+        <h2>功能演示</h2>
+        <a href="/mpc/create">1. 创建 MPC 钱包</a>
+        <a href="/mpc/sign">2. MPC 签名模拟</a>
+    </div>
+
+    <div class="info">
+        <p>当前环境: Spring Boot 3.5.13 + bitcoinj 0.17</p>
+        <p>说明: 本演示模拟了 MPC 的分布式签名流程，实际私钥分片计算由 Rust 节点完成。</p>
+    </div>
+</div>
+</body>
+</html>
