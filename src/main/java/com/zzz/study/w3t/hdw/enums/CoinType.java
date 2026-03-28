@@ -1,4 +1,4 @@
-package com.zzz.study.w3t.hdw;
+package com.zzz.study.w3t.hdw.enums;
 
 public enum CoinType {
     BITCOIN(0, "BTC", "Bitcoin", "MainNet"),

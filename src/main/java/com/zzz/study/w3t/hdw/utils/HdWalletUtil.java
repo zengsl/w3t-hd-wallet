@@ -1,5 +1,6 @@
-package com.zzz.study.w3t.hdw;
+package com.zzz.study.w3t.hdw.utils;
 
+import com.zzz.study.w3t.hdw.enums.CoinType;
 import org.bitcoinj.base.BitcoinNetwork;
 import org.bitcoinj.base.ScriptType;
 import org.bitcoinj.crypto.*;

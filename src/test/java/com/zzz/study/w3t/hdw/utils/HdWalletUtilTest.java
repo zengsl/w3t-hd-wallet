@@ -1,5 +1,6 @@
-package com.zzz.study.w3t.hdw;
+package com.zzz.study.w3t.hdw.utils;
 
+import com.zzz.study.w3t.hdw.enums.CoinType;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
