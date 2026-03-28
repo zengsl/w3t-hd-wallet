@@ -3,7 +3,6 @@ package com.zzz.study.w3t.hdw;
 import org.bitcoinj.base.BitcoinNetwork;
 import org.bitcoinj.base.ScriptType;
 import org.bitcoinj.crypto.*;
-import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 
