@@ -1,48 +1,66 @@
 package com.zzz.study.w3t.hdw.controller;
 
-import com.zzz.study.w3t.hdw.service.MpcService;
+import com.zzz.study.w3t.hdw.service.strategy.LocalTransactionStrategy;
+import com.zzz.study.w3t.hdw.service.strategy.MpcTransactionStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.Map;
 
 @Controller
+@RequestMapping("/eth")
 public class WalletController {
 
     @Autowired
-    private MpcService mpcService;
+    private LocalTransactionStrategy localStrategy;
 
-    // 1. 处理根目录访问，重定向到转账页面
-    @GetMapping("/")
-    public String index() {
-        // 直接跳转到功能页面，避免空白页
-        return "redirect:/eth/transfer";
-    }
+    @Autowired
+    private MpcTransactionStrategy mpcStrategy;
 
-    // 2. 转账页面
-    @GetMapping("/eth/transfer")
+    @GetMapping("/transfer")
     public String showTransferPage() {
-        // 对应 templates/eth-transfer.html
         return "eth-transfer";
     }
 
-    // 3. 处理转账请求
-    @PostMapping("/eth/transfer")
-    public String transfer(@RequestParam String privateKey,
-                           @RequestParam String toAddress,
-                           @RequestParam BigDecimal amount,
-                           Model model) {
+    /**
+     * 处理本地私钥签名交易
+     */
+    @PostMapping("/transfer/local")
+    public String transferLocal(@RequestParam String privateKey,
+                                @RequestParam String from,
+                                @RequestParam String to,
+                                @RequestParam BigDecimal amount,
+                                Model model) {
         try {
-            Map<String, Object> result = mpcService.signAndSendTransaction(privateKey, toAddress, amount);
+            Map<String, Object> result = localStrategy.send(from, to, amount, privateKey);
             model.addAttribute("result", result);
             return "eth-result";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
+            model.addAttribute("mode", "本地签名");
+            return "eth-transfer";
+        }
+    }
+
+    /**
+     * 处理 MPC 签名交易（不需要私钥）
+     */
+    @PostMapping("/transfer/mpc")
+    public String transferMpc(@RequestParam String from,
+                              @RequestParam String to,
+                              @RequestParam BigDecimal amount,
+                              Model model) {
+        try {
+            // MPC 模式下，privateKey 传 null 或空字符串
+            Map<String, Object> result = mpcStrategy.send(from, to, amount, null);
+            model.addAttribute("result", result);
+            return "eth-result";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("mode", "MPC签名");
             return "eth-transfer";
         }
     }

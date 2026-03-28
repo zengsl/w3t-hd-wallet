@@ -2,6 +2,8 @@ server:
   port: 8181  # 指定端口，防止被占用
 
 spring:
+  profiles:
+    active: local # 默认激活local环境
   application:
     name: w3t-hd-wallet-demo
   # 确保 Thymeleaf 模板引擎开启

@@ -6,6 +6,7 @@ import org.bitcoinj.base.ScriptType;
 import org.bitcoinj.crypto.*;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
+import org.web3j.crypto.Credentials;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -86,20 +87,8 @@ public class HdWalletUtil {
     private static String getAddressFromKey(DeterministicKey key, int coinType) {
         // 以太坊
         if (coinType == CoinType.ETHEREUM.getCoinType()) {
-            // 1. 获取公钥 (不带 04 前缀的原始字节)
-            byte[] pubKey = key.getPubKey();
-
-            // 2. 使用 Keccak-256 哈希
-            // 注意：不能用 bitcoinj 的 sha256hash160，那是比特币用的
-            Keccak.DigestKeccak keccak = new Keccak.Digest256();
-            byte[] hash = keccak.digest(pubKey);
-
-            // 3. 取最后 20 字节
-            byte[] addressBytes = Arrays.copyOfRange(hash, hash.length - 20, hash.length);
-
-            // 4. 转为 16 进制并加 0x 前缀
-            return "0x" + HexFormat.of().formatHex(addressBytes);
-
+            Credentials credentials = Credentials.create(key.getPrivateKeyAsHex());
+            return credentials.getAddress();
         } else {
             // 比特币或其他 (使用 bitcoinj 默认逻辑)
             return key.toAddress(ScriptType.P2PKH, BitcoinNetwork.TESTNET).toString();
@@ -108,15 +97,9 @@ public class HdWalletUtil {
 
     public static void main(String[] args) {
         try {
-            // 助记词: recipe volume blue nasty inquiry sea baby farm business world fitness pool
-            // 以太坊地址 (m/44H/60H/0H/0/0): 0x101fad54ae25076579f2f7ec92b4209b33b5f201 TODO 地址格式和METAMASK一致，为什么将助记词导入之后无法关联到呢？
-            // https://sepolia.etherscan.io/tx/0x8984386c4d8304b229f54d76b529e508aea55c049813970e7005a2eae5ad2c30
-            // 以太坊地址：0x101fad54ae25076579f2f7ec92b4209b33b5f201
-            // 67391719122516144521706562135748408655814537406568014084488913715369885812132
-            // 转0.01个以太测试
 
             // 1. 生成助记词
-            String mnemonic = generateMnemonic();
+            /*String mnemonic = generateMnemonic();
             System.out.println("助记词: " + mnemonic);
 
             int accountIndex = 0, addressIndex = 0;
@@ -133,10 +116,23 @@ public class HdWalletUtil {
 
             String ethAddress2 = deriveAddress(mnemonic, CoinType.ETHEREUM.getCoinType(), accountIndex2, addressIndex2);
             System.out.println("以太坊地址 (m/44'/0'/0'/0/0): " + ethAddress2);
-
+*/
 
             DeterministicKey deterministicKey = deterministicKey("recipe volume blue nasty inquiry sea baby farm business world fitness pool", CoinType.ETHEREUM.getCoinType(), 0, 0);
             System.out.println("Path: " + (deterministicKey != null ? deterministicKey.getPath().toString() : " 空"));
+            System.out.println("private Key: 0x"+deterministicKey.getPrivateKeyAsHex());
+            String addressFromKey = getAddressFromKey(deterministicKey, CoinType.ETHEREUM.getCoinType());
+            System.out.println("address: " + addressFromKey);
+
+            DeterministicKey deterministicKey2 = deterministicKey("recipe volume blue nasty inquiry sea baby farm business world fitness pool", CoinType.ETHEREUM.getCoinType(), 1, 0);
+            System.out.println("Path: " + (deterministicKey2 != null ? deterministicKey2.getPath().toString() : " 空"));
+            System.out.println("private Key: 0x"+deterministicKey2.getPrivateKeyAsHex());
+            String addressFromKey2 = getAddressFromKey(deterministicKey2, CoinType.ETHEREUM.getCoinType());
+            System.out.println("address: " + addressFromKey2);
+
+
+            Credentials credentials = Credentials.create(deterministicKey.getPrivateKeyAsHex());
+            System.out.println("w3j address: " + credentials.getAddress());
 
         } catch (Exception e) {
             e.printStackTrace();

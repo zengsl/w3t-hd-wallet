@@ -42,7 +42,7 @@
         </AsyncLogger>
 
         <!-- 根日志器：保持同步，处理 Spring 框架等其他日志 -->
-        <Root level="info">
+        <Root level="INFO">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Root>

@@ -2,6 +2,7 @@ package com.zzz.study.w3t.hdw.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 @Service
 public class MpcService {
     private static final Logger logger = LoggerFactory.getLogger(MpcService.class);
@@ -27,13 +29,14 @@ public class MpcService {
 
     // 以太坊测试网 RPC URL (请替换为你自己的 Infura/Alchemy Key)
     // 如果没有 Key，代码将运行在 "模拟模式"，只打印日志不真正上链
-    private static final String INFURA_URL = "https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID";
+    @Value("${MY_ENV.INFURA_URL}")
+    private String infuraUrl;
 
     private final Web3j web3j;
 
     public MpcService() {
         // 初始化 Web3j 连接
-        this.web3j = Web3j.build(new HttpService(INFURA_URL));
+        this.web3j = Web3j.build(new HttpService(infuraUrl));
     }
 
     /**
@@ -92,7 +95,7 @@ public class MpcService {
 
             // --- 步骤 C: 发送交易 ---
             // 如果 RPC URL 有效，则真正发送；否则仅返回模拟结果
-            if (INFURA_URL.contains("YOUR_INFURA")) {
+            if (infuraUrl.contains("YOUR_INFURA")) {
                 response.put("status", "SIMULATION_MODE");
                 response.put("message", "未配置有效的 Infura URL，未真正上链");
             } else {
